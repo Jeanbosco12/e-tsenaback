@@ -2,13 +2,13 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Merchant } from './mercant.entity';
-import { User } from '../user/user.entity';
+import { User, UserRole } from '../user/user.entity';
 import { CreateMerchantDto, UpdateMerchantDto } from './dto/mercant.dto';
-import { UserRole } from '../user/user.entity';
 
 @Injectable()
 export class MerchantService {
@@ -32,37 +32,38 @@ export class MerchantService {
 
     const existing = await this.merchantRepository.findOne({
       where: { user: { id: userId } },
-      relations: ['user'],
     });
 
     if (existing) {
-      throw new BadRequestException('User is already a merchant');
+      throw new BadRequestException('User already has a merchant');
     }
 
-    // upgrade role
+    if (user.role === UserRole.ADMIN) {
+      throw new ForbiddenException('Admin cannot become merchant');
+    }
+
+    // upgrade role sécurisé
     user.role = UserRole.MERCHANT;
     await this.userRepository.save(user);
 
     const merchant = this.merchantRepository.create({
       ...merchantData,
-      user,
+      contact: merchantData.contact
+        ? String(merchantData.contact)
+        : undefined,
+      user: { id: userId }, // optimisation
     });
 
-    return this.merchantRepository.save(merchant);
+    return await this.merchantRepository.save(merchant);
   }
 
-  // FIND ALL
   async findAll(): Promise<Merchant[]> {
-    return this.merchantRepository.find({
-      relations: ['user'],
-    });
+    return this.merchantRepository.find();
   }
 
-  // FIND ONE
   async findOne(id: string): Promise<Merchant> {
     const merchant = await this.merchantRepository.findOne({
       where: { id },
-      relations: ['user'],
     });
 
     if (!merchant) {
@@ -72,40 +73,53 @@ export class MerchantService {
     return merchant;
   }
 
-  // FIND BY ID USER
   async findByUserId(userId: string): Promise<Merchant> {
-    const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
     const merchant = await this.merchantRepository.findOne({
-      where: { user: {id: userId} },
-      relations: ['user'],
+      where: { user: { id: userId } },
     });
 
     if (!merchant) {
-      throw new NotFoundException(`Merchant with ID user ${userId} not found`);
+      throw new NotFoundException(
+        `Merchant for user ${userId} not found`,
+      );
     }
 
     return merchant;
   }
 
-  // UPDATE
   async update(
     id: string,
     merchantData: UpdateMerchantDto,
+    userId: string,
   ): Promise<Merchant> {
     const merchant = await this.findOne(id);
 
-    Object.assign(merchant, merchantData);
+    // ownership check
+    if (merchant.user.id !== userId) {
+      throw new ForbiddenException('Not your merchant');
+    }
 
-    return this.merchantRepository.save(merchant);
+    // assign sécurisé
+    merchant.name = merchantData.name ?? merchant.name;
+    merchant.address = merchantData.address ?? merchant.address;
+    merchant.town = merchantData.town ?? merchant.town;
+    merchant.latitude = merchantData.latitude ?? merchant.latitude;
+    merchant.longitude = merchantData.longitude ?? merchant.longitude;
+
+    if (merchantData.contact) {
+      merchant.contact = String(merchantData.contact);
+    }
+
+    return await this.merchantRepository.save(merchant);
   }
 
-  // DELETE
-  async remove(id: string): Promise<void> {
+  async remove(id: string, userId: string): Promise<void> {
     const merchant = await this.findOne(id);
+
+    if (merchant.user.id !== userId) {
+      throw new ForbiddenException('Not your merchant');
+    }
+
     await this.merchantRepository.remove(merchant);
   }
 }

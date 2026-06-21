@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 
 export enum UserRole {
@@ -26,6 +27,7 @@ export class User {
   @Column({ length: 100 })
   name: string;
 
+  @Index({ unique: true })
   @Column({ length: 150, unique: true })
   email: string;
 
@@ -39,8 +41,8 @@ export class User {
   })
   role: UserRole;
 
-  @Column({ nullable: true })
-  photo: string; // URL (Cloudinary, S3…)
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  photo: string | null;
 
   @Column({
     type: 'enum',
@@ -49,9 +51,9 @@ export class User {
   })
   status: UserStatus;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
-  @UpdateDateColumn()
-  updated_at: Date;
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }
