@@ -4,6 +4,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+<<<<<<< HEAD
+=======
+  Index,
+>>>>>>> 532c880be8cc427983f461d3acf08280dadd2022
 } from 'typeorm';
 
 export enum UserRole {
@@ -18,7 +22,10 @@ export enum UserStatus {
   PENDING = 'pending',
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 532c880be8cc427983f461d3acf08280dadd2022
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -27,6 +34,7 @@ export class User {
   @Column({ length: 100 })
   name: string;
 
+<<<<<<< HEAD
   @Column({ length: 150, unique: true })
   email: string;
 
@@ -34,15 +42,32 @@ export class User {
   password: string;
 
   @Column({ 
+=======
+  @Index({ unique: true })
+  @Column({ length: 150, unique: true })
+  email: string;
+
+  @Column({ type: 'text', select: false })
+  password: string;
+
+  @Column({
+>>>>>>> 532c880be8cc427983f461d3acf08280dadd2022
     type: 'enum',
     enum: UserRole,
     default: UserRole.USER,
   })
+<<<<<<< HEAD
   role: UserRole
   
 
   @Column({nullable: true})
   photo: string;
+=======
+  role: UserRole;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  photo: string | null;
+>>>>>>> 532c880be8cc427983f461d3acf08280dadd2022
 
   @Column({
     type: 'enum',
@@ -51,9 +76,18 @@ export class User {
   })
   status: UserStatus;
 
+<<<<<<< HEAD
   @CreateDateColumn()
   created_at: Date;
 
   @UpdateDateColumn()
   updated_at: Date;
 }
+=======
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
+}
+>>>>>>> 532c880be8cc427983f461d3acf08280dadd2022

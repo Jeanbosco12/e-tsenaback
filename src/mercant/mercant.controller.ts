@@ -9,7 +9,6 @@ import {
   Put,
   Delete,
   ParseUUIDPipe,
-  ForbiddenException,
 } from '@nestjs/common';
 import { MerchantService } from './mercant.service';
 import {
@@ -18,20 +17,22 @@ import {
 } from './dto/mercant.dto';
 import { Merchant } from './mercant.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import type { Request } from 'express';
 
 @Controller('merchants')
 export class MerchantController {
   constructor(private readonly merchantService: MerchantService) {}
 
+  // CREATE (auth obligatoire)
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(
     @Body() createMerchantDto: CreateMerchantDto,
-    @Req() req,
+    @Req() req: Request,
   ): Promise<Merchant> {
-    const userId = req.user.sub;
+    const user = req.user as any;
 
-    return this.merchantService.create(userId, createMerchantDto);
+    return this.merchantService.create(user.id, createMerchantDto);
   }
 
   // PUBLIC (utile pour carte)
@@ -43,57 +44,50 @@ export class MerchantController {
   // PUBLIC
   @Get(':id')
   async findOne(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<Merchant> {
     return this.merchantService.findOne(id);
   }
 
-  // MERCHANT
+  // AUTH (optionnel selon ton besoin)
   @UseGuards(JwtAuthGuard)
   @Get('user/:id')
-  async findbyUserId(
-    @Param('id', new ParseUUIDPipe()) id: string,
+  async findByUserId(
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<Merchant> {
     return this.merchantService.findByUserId(id);
   }
 
-  // OWNER OU ADMIN
+  // OWNER (géré dans le service)
   @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateMerchantDto: UpdateMerchantDto,
-    @Req() req,
+    @Req() req: Request,
   ): Promise<Merchant> {
-    const merchant = await this.merchantService.findOne(id);
+    const user = req.user as any;
 
-    if (
-      merchant.user.id !== req.user.sub &&
-      req.user.role !== 'admin'
-    ) {
-      throw new ForbiddenException('Access denied');
-    }
-
-    return this.merchantService.update(id, updateMerchantDto);
+    return this.merchantService.update(
+      id,
+      updateMerchantDto,
+      user.id, // FIX principal
+    );
   }
 
-  // OWNER OU ADMIN
+  // OWNER (géré dans le service)
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(
-    @Param('id', new ParseUUIDPipe()) id: string,
-    @Req() req,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: Request,
   ): Promise<{ message: string }> {
-    const merchant = await this.merchantService.findOne(id);
+    const user = req.user as any;
 
-    if (
-      merchant.user.id !== req.user.sub &&
-      req.user.role !== 'admin'
-    ) {
-      throw new ForbiddenException('Access denied');
-    }
-
-    await this.merchantService.remove(id);
+    await this.merchantService.remove(
+      id,
+      user.id, // FIX principal
+    );
 
     return { message: 'Merchant deleted successfully' };
   }
