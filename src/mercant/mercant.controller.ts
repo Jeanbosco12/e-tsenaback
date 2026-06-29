@@ -63,14 +63,12 @@ export class MerchantController {
   @Put(':id')
   async update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateMerchantDto: UpdateMerchantDto,
     @Req() req: Request,
   ): Promise<Merchant> {
     const user = req.user as any;
 
     return this.merchantService.update(
       id,
-      updateMerchantDto,
       user.id, // FIX principal
     );
   }
