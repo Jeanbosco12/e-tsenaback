@@ -10,6 +10,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { MercantModule } from './mercant/mercant.module';
 import { MediaModule } from './media/media.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { MediaModule } from './media/media.module';
     AuthModule,
     MercantModule,
     MediaModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],
