@@ -29,7 +29,6 @@ import { MediaModule } from './media/media.module';
       synchronize: true,
     }),
 
-    // AJOUT IMPORTANT
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',

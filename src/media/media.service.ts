@@ -17,7 +17,7 @@ export class MediaService {
     private readonly repo: Repository<Media>,
   ) {}
 
-  // 🔥 SAVE GENERIC FILE
+  // SAVE GENERIC FILE
   async saveFile(
     file: Express.Multer.File,
     userId: string,
@@ -42,7 +42,7 @@ export class MediaService {
     }
   }
 
-  // 🔥 PROFILE PHOTO (spécialisé)
+  // PROFILE PHOTO (spécialisé)
   async saveProfilePhoto(
     file: Express.Multer.File,
     userId: string,
@@ -66,7 +66,7 @@ export class MediaService {
     }
   }
 
-  // 🔍 GET FILE
+  // GET FILE
   async getFile(id: string): Promise<Media> {
     const file = await this.repo.findOneBy({ id });
 
@@ -77,7 +77,7 @@ export class MediaService {
     return file;
   }
 
-  // 🔐 GET OWNED FILE
+  // GET OWNED FILE
   async getOwnedFile(id: string, userId: string): Promise<Media> {
     const file = await this.repo.findOneBy({ id, ownerId: userId });
 
@@ -103,7 +103,7 @@ export class MediaService {
     await this.repo.remove(file);
   }
 
-  // 🔗 RESPONSE FORMAT
+  // RESPONSE FORMAT
   private toResponse(media: Media): MediaResponseDto {
     return {
       id: media.id,
@@ -123,7 +123,7 @@ export class MediaService {
     return path.replace(/\\/g, '/').replace(/^\.?\//, '');
   }
 
-  // 🧠 DETECT TYPE
+  // DETECT TYPE
   private detectType(mimetype: string): MediaType {
     if (mimetype.startsWith('image/')) return MediaType.IMAGE;
     if (mimetype.startsWith('video/')) return MediaType.VIDEO;
