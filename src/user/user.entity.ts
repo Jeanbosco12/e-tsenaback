@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 
 export enum UserRole {
@@ -18,7 +19,6 @@ export enum UserStatus {
   PENDING = 'pending',
 }
 
-
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -27,22 +27,22 @@ export class User {
   @Column({ length: 100 })
   name: string;
 
+  @Index({ unique: true })
   @Column({ length: 150, unique: true })
   email: string;
 
-  @Column({type: 'text', select: false })
+  @Column({ type: 'text', select: false })
   password: string;
 
-  @Column({ 
+  @Column({
     type: 'enum',
     enum: UserRole,
     default: UserRole.USER,
   })
-  role: UserRole
-  
+  role: UserRole;
 
-  @Column({nullable: true})
-  photo: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  photo: string | null;
 
   @Column({
     type: 'enum',
@@ -51,9 +51,9 @@ export class User {
   })
   status: UserStatus;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
-  @UpdateDateColumn()
-  updated_at: Date;
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }

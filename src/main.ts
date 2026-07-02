@@ -1,14 +1,49 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { env } from 'process';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
-  //activer cors
+
+  /* ───────────────────────────── */
+  /* GLOBAL CONFIG */
+  /* ───────────────────────────── */
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
   app.enableCors({
-    origin:'http://localhost:4001',
+    origin: 'http://localhost:4001',
+    credentials: true,
   });
-  await app.listen(process.env.BACKEND_PORT ?? 4011);
+
+  /* ❌ SUPPRIMÉ : useStaticAssets */
+
+  /* ───────────────────────────── */
+  /* SWAGGER CONFIG */
+  /* ───────────────────────────── */
+  const config = new DocumentBuilder()
+    .setTitle('E-tsenantsika API')
+    .setDescription('Documentation API complete pour le projet E-tsenantsika')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
+
+  await app.listen(env.BACKEND_PORT ?? 4011);
 }
+
 bootstrap();

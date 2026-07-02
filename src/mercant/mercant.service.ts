@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -104,8 +105,12 @@ export class MerchantService {
   }
 
   // DELETE
-  async remove(id: string): Promise<void> {
+  async remove(id: string, userId: string): Promise<void> {
     const merchant = await this.findOne(id);
+
+    if (merchant.user.id != userId) {
+      throw new ForbiddenException('Not your mercant')
+    }
     await this.merchantRepository.remove(merchant);
   }
 }

@@ -1,28 +1,45 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { ProductModule } from './product/product.module';
 import { MercantModule } from './mercant/mercant.module';
+import { MediaModule } from './media/media.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: '1111',
-      database: 'etsenantsika',
+      host: process.env.POSTGRES_HOST,
+      port: Number(process.env.POSTGRES_PORT),
+      username: process.env.PG_USER,
+      password: process.env.PG_PASSWORD,
+      database: process.env.POSTGRES_DB,
       autoLoadEntities: true,
-      synchronize: true, // Disable in production
+      synchronize: true,
     }),
+
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
+    }),
+
     UserModule,
     AuthModule,
-    ProductModule,
     MercantModule,
+    MediaModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],

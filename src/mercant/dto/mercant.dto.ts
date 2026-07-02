@@ -28,6 +28,10 @@ export class CreateMerchantDto {
   @IsString()
   address?: string;
 
+  @IsNumber()
+  @Length(12, 15)
+  contact: number;
+
   @IsString()
   @IsNotEmpty()
   @Length(2, 200)
@@ -55,6 +59,10 @@ export class UpdateMerchantDto {
   @IsOptional()
   @IsString()
   address?: string;
+
+  @IsNumber()
+  @Length(12, 15)
+  contact?: number;
 
   @IsString()
   @IsNotEmpty()
